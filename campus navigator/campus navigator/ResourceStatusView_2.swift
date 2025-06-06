@@ -3,6 +3,7 @@ import SwiftUI
 struct SegmentExampleView: View {
     
     @State private var selectedSegment = "Available"
+    @State private var searchText = "" // 
     
     let segments = ["Available", "All"]
     
@@ -10,7 +11,7 @@ struct SegmentExampleView: View {
     struct ResourceItem: Identifiable {
         let id = UUID()
         let name: String
-        let systemIconName: String // 👈 New field
+        let systemIconName: String
         let isAvailable: Bool
         let availableTime: String?
         let unavailableTime: String?
@@ -20,11 +21,6 @@ struct SegmentExampleView: View {
     }
     
     // Example data
-    let availableItems = [
-        ResourceItem(name: "PC Lab 1", systemIconName: "desktopcomputer", isAvailable: true, availableTime: "10:00 AM - 12:00 PM", unavailableTime: nil, openHours: "8:00 AM", closeHours: "8:00 PM", crowdLevel: "Low"),
-        ResourceItem(name: "Library Room A", systemIconName: "books.vertical", isAvailable: true, availableTime: "1:00 PM - 3:00 PM", unavailableTime: nil, openHours: "9:00 AM", closeHours: "6:00 PM", crowdLevel: "Medium")
-    ]
-    
     let allItems = [
         ResourceItem(name: "PC Lab 1", systemIconName: "desktopcomputer", isAvailable: true, availableTime: "10:00 AM - 12:00 PM", unavailableTime: nil, openHours: "8:00 AM", closeHours: "8:00 PM", crowdLevel: "Low"),
         
@@ -42,7 +38,17 @@ struct SegmentExampleView: View {
         
         ResourceItem(name: "Counselling Office", systemIconName: "person.crop.circle.badge.questionmark", isAvailable: true, availableTime: "Available now", unavailableTime: nil, openHours: "9:00 AM", closeHours: "4:00 PM", crowdLevel: "Low")
     ]
-
+    
+    // Computed filtered items
+    var filteredItems: [ResourceItem] {
+        let items = selectedSegment == "Available" ? allItems.filter { $0.isAvailable } : allItems
+        
+        if searchText.isEmpty {
+            return items
+        } else {
+            return items.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        }
+    }
     
     var body: some View {
         VStack {
@@ -55,17 +61,18 @@ struct SegmentExampleView: View {
             .pickerStyle(.segmented)
             .padding()
             
+            // Search Bar
+            TextField("Search resources", text: $searchText)
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+                .padding(.horizontal)
+            
             // Scrollable cards
             ScrollView {
                 LazyVStack(spacing: 16) {
-                    if selectedSegment == "Available" {
-                        ForEach(availableItems) { item in
-                            ResourceCardView(resource: item)
-                        }
-                    } else {
-                        ForEach(allItems) { item in
-                            ResourceCardView(resource: item)
-                        }
+                    ForEach(filteredItems) { item in
+                        ResourceCardView(resource: item)
                     }
                 }
                 .padding()
@@ -146,16 +153,11 @@ struct ResourceCardView: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-//        .background(
-//            RoundedRectangle(cornerRadius: 12)
-//                .fill(Color(UIColor.secondarySystemBackground))
-//                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-//        )
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.05)]), // Light blue gradient
+                        gradient: Gradient(colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.05)]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -168,5 +170,3 @@ struct ResourceCardView: View {
 #Preview {
     SegmentExampleView()
 }
-
-
