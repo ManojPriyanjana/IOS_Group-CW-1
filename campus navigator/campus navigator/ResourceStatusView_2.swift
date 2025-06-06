@@ -7,7 +7,7 @@ struct SegmentExampleView: View {
     
     let segments = ["Available", "All"]
     
-    // Data model (dates removed!)
+    // Data model
     struct ResourceItem: Identifiable {
         let id = UUID()
         let name: String
@@ -55,16 +55,15 @@ struct SegmentExampleView: View {
             crowdLevel: "High"
         ),
         
-        // Cafeteria → always available
         ResourceItem(
             name: "Cafeteria",
             systemIconName: "fork.knife",
-            isAvailable: true, // Always available
+            isAvailable: true,
             availableTime: "7:00 AM - 7:00 PM",
             unavailableTime: nil,
             openHours: "7:00 AM",
             closeHours: "7:00 PM",
-            crowdLevel: "High" // Any level allowed
+            crowdLevel: "High"
         )
     ]
     
@@ -81,6 +80,15 @@ struct SegmentExampleView: View {
     
     var body: some View {
         VStack {
+            
+            // SEARCH BAR on top
+            TextField("Search resources", text: $searchText)
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .padding(.top)
+            
             // Segmented Picker
             Picker("Options", selection: $selectedSegment) {
                 ForEach(segments, id: \.self) { segment in
@@ -88,14 +96,8 @@ struct SegmentExampleView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .padding()
-            
-            // Search Bar
-            TextField("Search resources", text: $searchText)
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
-                .padding(.horizontal)
+            .padding(.horizontal)
+            .padding(.top, 4)
             
             // Scrollable cards
             ScrollView {
