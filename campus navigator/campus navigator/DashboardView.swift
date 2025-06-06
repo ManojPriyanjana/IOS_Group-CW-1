@@ -157,6 +157,7 @@ struct DashboardView: View {
                         
                         
                     }
+                        .scrollIndicators(.hidden)
                 )
                 .navigationTitle("Dashboard")
                 .navigationBarTitleDisplayMode(.inline)
