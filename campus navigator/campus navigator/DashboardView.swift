@@ -149,12 +149,20 @@ struct DashboardView: View {
                             .padding()
                             
                             Spacer(minLength: 24)
+                            
+                            
                         }
                         .padding(.vertical, 24)
+                        
+                        
+                        
                     }
                 )
                 .navigationTitle("Dashboard")
                 .navigationBarTitleDisplayMode(.inline)
+            
+            
+            
         }
     }
 }

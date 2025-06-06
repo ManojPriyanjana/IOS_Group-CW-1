@@ -1,47 +1,37 @@
 import SwiftUI
 
 struct ContentView: View {
-    // Example state (e.g. email, navigation path)
+    // 👇 Receive isLoggedIn from parent
+    @Binding var isLoggedIn: Bool
+    
+    // Example state (e.g. email)
     @State private var email: String = ""
-    @State private var isLoggedIn = false
 
     var body: some View {
         NavigationStack {
-           
-            // this line add by me
             
             ZStack {
-                
                 // 1) Background Image
-                // ───────────────────────────────────────────────────────
                 Image("BackgroundImage")
-                    .resizable()             // allow scaling
-                    .scaledToFill()          // fill the view’s frame
-                    .ignoresSafeArea()       // extend behind notch/home indicator
-
-              
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                
                 // 2) Foreground Content
-               //------------------------------------------------------------
                 VStack(spacing: 20) {
                     Spacer().frame(height: 150)
-
-                    // Example: Your logo at top
+                    
                     Image("Nibm_logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 400, height: 60)
-
+                    
                     Text("Campus Navigator")
                         .font(.title2).bold()
                         .foregroundColor(.blue)
-
+                    
                     Spacer().frame(height: 70)
                     
-                    //card test
-                    
-                    // card test end
-
-                    // Example: Email TextField on top of the image
                     TextField("Enter Campus Email", text: $email)
                         .padding(12)
                         .background(Color.white.opacity(0.6))
@@ -51,10 +41,10 @@ struct ContentView: View {
                                 .stroke(Color.white.opacity(0.8), lineWidth: 1)
                         )
                         .padding(.horizontal, 100)
-
-                    // Example: Login Button
+                    
+                    // Login Button
                     Button {
-                        isLoggedIn = true
+                        isLoggedIn = true // 👈 trigger switch to MainTabView
                     } label: {
                         Text("Login")
                             .font(.headline)
@@ -65,29 +55,29 @@ struct ContentView: View {
                             .cornerRadius(8)
                             .padding(.horizontal, 100)
                     }
-
-                    // Example: “Continue as Guest”
+                    
+                    // Continue as Guest
                     Button {
-                        isLoggedIn = true
+                        isLoggedIn = true // 👈 also trigger MainTabView
                     } label: {
                         Text("Continue as Guest")
                             .foregroundColor(Color.white.opacity(0.8))
                     }
                     .padding(.top, 10)
-
+                    
                     Spacer()
                 }
                 .padding(.bottom, 40)
             }
-            // Example navigation: when isLoggedIn == true, navigate to DashboardView()
-            .navigationDestination(isPresented: $isLoggedIn) {
-                DashboardView()
-            }
+            
+            // ❌ REMOVE this old navigationDestination
+            // .navigationDestination(isPresented: $isLoggedIn) { DashboardView() }
+            // Now handled in App entry point!
         }
     }
 }
 
-
 #Preview {
-    ContentView()
+    // Preview needs a constant Binding
+    ContentView(isLoggedIn: .constant(false))
 }
