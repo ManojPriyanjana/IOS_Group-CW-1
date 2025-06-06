@@ -135,7 +135,8 @@ struct DashboardView: View {
                                     systemIconName: "square.grid.3x3.fill",
                                     backgroundColor: .primaryBlue
                                 ) {
-                                    ResourceStatusView()
+//                                    ResourceStatusView()
+                                    SegmentExampleView()
                                 }
                                 
                                 CardButton(
