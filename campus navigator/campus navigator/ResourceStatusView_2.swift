@@ -3,11 +3,11 @@ import SwiftUI
 struct SegmentExampleView: View {
     
     @State private var selectedSegment = "Available"
-    @State private var searchText = "" // 
+    @State private var searchText = ""
     
     let segments = ["Available", "All"]
     
-    // Example data model
+    // Data model (dates removed!)
     struct ResourceItem: Identifiable {
         let id = UUID()
         let name: String
@@ -22,24 +22,53 @@ struct SegmentExampleView: View {
     
     // Example data
     let allItems = [
-        ResourceItem(name: "PC Lab 1", systemIconName: "desktopcomputer", isAvailable: true, availableTime: "10:00 AM - 12:00 PM", unavailableTime: nil, openHours: "8:00 AM", closeHours: "8:00 PM", crowdLevel: "Low"),
+        ResourceItem(
+            name: "PC Lab 1",
+            systemIconName: "desktopcomputer",
+            isAvailable: true,
+            availableTime: "10:00 AM - 12:00 PM",
+            unavailableTime: nil,
+            openHours: "8:00 AM",
+            closeHours: "8:00 PM",
+            crowdLevel: "Low"
+        ),
         
-        ResourceItem(name: "Library Room A", systemIconName: "books.vertical", isAvailable: true, availableTime: "1:00 PM - 3:00 PM", unavailableTime: nil, openHours: "9:00 AM", closeHours: "6:00 PM", crowdLevel: "Medium"),
+        ResourceItem(
+            name: "Library Room A",
+            systemIconName: "books.vertical",
+            isAvailable: true,
+            availableTime: "1:00 PM - 3:00 PM",
+            unavailableTime: nil,
+            openHours: "9:00 AM",
+            closeHours: "6:00 PM",
+            crowdLevel: "Medium"
+        ),
         
-        ResourceItem(name: "Study Room B", systemIconName: "person.2.square.stack.fill", isAvailable: false, availableTime: nil, unavailableTime: "Booked until 4:00 PM", openHours: "9:00 AM", closeHours: "5:00 PM", crowdLevel: "High"),
+        ResourceItem(
+            name: "Study Room B",
+            systemIconName: "person.2.square.stack.fill",
+            isAvailable: false,
+            availableTime: nil,
+            unavailableTime: "Booked until 4:00 PM",
+            openHours: "9:00 AM",
+            closeHours: "5:00 PM",
+            crowdLevel: "High"
+        ),
         
-        ResourceItem(name: "Cafeteria", systemIconName: "fork.knife", isAvailable: false, availableTime: nil, unavailableTime: "Closed today", openHours: "7:00 AM", closeHours: "7:00 PM", crowdLevel: "Full"),
-        
-        ResourceItem(name: "Gym", systemIconName: "figure.strengthtraining.traditional", isAvailable: true, availableTime: "2:00 PM - 4:00 PM", unavailableTime: nil, openHours: "6:00 AM", closeHours: "10:00 PM", crowdLevel: "Medium"),
-        
-        ResourceItem(name: "Auditorium", systemIconName: "music.note.house", isAvailable: false, availableTime: nil, unavailableTime: "Reserved until 5:00 PM", openHours: "9:00 AM", closeHours: "9:00 PM", crowdLevel: "High"),
-        
-        ResourceItem(name: "Medical Center", systemIconName: "cross.case.fill", isAvailable: true, availableTime: "Available now", unavailableTime: nil, openHours: "8:00 AM", closeHours: "5:00 PM", crowdLevel: "Low"),
-        
-        ResourceItem(name: "Counselling Office", systemIconName: "person.crop.circle.badge.questionmark", isAvailable: true, availableTime: "Available now", unavailableTime: nil, openHours: "9:00 AM", closeHours: "4:00 PM", crowdLevel: "Low")
+        // Cafeteria → always available
+        ResourceItem(
+            name: "Cafeteria",
+            systemIconName: "fork.knife",
+            isAvailable: true, // Always available
+            availableTime: "7:00 AM - 7:00 PM",
+            unavailableTime: nil,
+            openHours: "7:00 AM",
+            closeHours: "7:00 PM",
+            crowdLevel: "High" // Any level allowed
+        )
     ]
     
-    // Computed filtered items
+    // Filtered items
     var filteredItems: [ResourceItem] {
         let items = selectedSegment == "Available" ? allItems.filter { $0.isAvailable } : allItems
         
@@ -88,11 +117,11 @@ struct ResourceCardView: View {
     let resource: SegmentExampleView.ResourceItem
     
     var crowdColor: Color {
-        switch resource.crowdLevel {
-        case "Low": return .green
-        case "Medium": return .orange
-        case "High": return .red
-        case "Full": return .gray
+        switch resource.crowdLevel.lowercased() {
+        case "low": return .green
+        case "medium": return .orange
+        case "high": return .red
+        case "full": return .gray
         default: return .secondary
         }
     }
