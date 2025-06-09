@@ -136,7 +136,8 @@ struct DashboardView: View {
                                     backgroundColor: .primaryBlue
                                 ) {
 //                                    ResourceStatusView()
-                                    SegmentExampleView()
+                                    ResourceStatusView_2()
+
                                 }
                                 
                                 CardButton(

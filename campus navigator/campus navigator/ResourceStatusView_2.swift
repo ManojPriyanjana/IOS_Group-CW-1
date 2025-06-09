@@ -1,13 +1,12 @@
 import SwiftUI
 
-struct SegmentExampleView: View {
+struct ResourceStatusView_2: View {
     
     @State private var selectedSegment = "Available"
     @State private var searchText = ""
     
-    let segments = ["Available", "All"]
+    let segments = ["Available Today", "All"]
     
-    // Data model
     struct ResourceItem: Identifiable {
         let id = UUID()
         let name: String
@@ -18,9 +17,9 @@ struct SegmentExampleView: View {
         let openHours: String
         let closeHours: String
         let crowdLevel: String
+        let bookedDates: [Date]
     }
     
-    // Example data
     let allItems = [
         ResourceItem(
             name: "PC Lab 1",
@@ -30,7 +29,8 @@ struct SegmentExampleView: View {
             unavailableTime: nil,
             openHours: "8:00 AM",
             closeHours: "8:00 PM",
-            crowdLevel: "Low"
+            crowdLevel: "Low",
+            bookedDates: []
         ),
         
         ResourceItem(
@@ -41,7 +41,8 @@ struct SegmentExampleView: View {
             unavailableTime: nil,
             openHours: "9:00 AM",
             closeHours: "6:00 PM",
-            crowdLevel: "Medium"
+            crowdLevel: "Medium",
+            bookedDates: [Date().addingTimeInterval(86400 * 1), Date().addingTimeInterval(86400 * 3)]
         ),
         
         ResourceItem(
@@ -52,7 +53,8 @@ struct SegmentExampleView: View {
             unavailableTime: "Booked until 4:00 PM",
             openHours: "9:00 AM",
             closeHours: "5:00 PM",
-            crowdLevel: "High"
+            crowdLevel: "High",
+            bookedDates: [Date(), Date().addingTimeInterval(86400 * 2)]
         ),
         
         ResourceItem(
@@ -63,11 +65,11 @@ struct SegmentExampleView: View {
             unavailableTime: nil,
             openHours: "7:00 AM",
             closeHours: "7:00 PM",
-            crowdLevel: "High"
+            crowdLevel: "High",
+            bookedDates: []
         )
     ]
     
-    // Filtered items
     var filteredItems: [ResourceItem] {
         let items = selectedSegment == "Available" ? allItems.filter { $0.isAvailable } : allItems
         
@@ -79,44 +81,46 @@ struct SegmentExampleView: View {
     }
     
     var body: some View {
-        VStack {
-            
-            // SEARCH BAR on top
-            TextField("Search resources", text: $searchText)
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
-                .padding(.horizontal)
-                .padding(.top)
-            
-            // Segmented Picker
-            Picker("Options", selection: $selectedSegment) {
-                ForEach(segments, id: \.self) { segment in
-                    Text(segment)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top, 4)
-            
-            // Scrollable cards
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredItems) { item in
-                        ResourceCardView(resource: item)
+        NavigationStack {
+            VStack {
+                
+                TextField("Search resources", text: $searchText)
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top)
+                
+                Picker("Options", selection: $selectedSegment) {
+                    ForEach(segments, id: \.self) { segment in
+                        Text(segment)
                     }
                 }
-                .padding()
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.top, 4)
+                
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(filteredItems) { item in
+                            NavigationLink(destination: ResourceDetailView(resource: item)) {
+                                ResourceCardView(resource: item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding()
+                }
+                
+                Spacer()
             }
-            
-            Spacer()
+            .navigationTitle("Resources")
         }
-        .navigationTitle("Resources")
     }
 }
 
 struct ResourceCardView: View {
-    let resource: SegmentExampleView.ResourceItem
+    let resource: ResourceStatusView_2.ResourceItem
     
     var crowdColor: Color {
         switch resource.crowdLevel.lowercased() {
@@ -130,8 +134,6 @@ struct ResourceCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            
-            // Top: Icon + Name
             HStack(spacing: 12) {
                 Image(systemName: resource.systemIconName)
                     .font(.system(size: 30))
@@ -145,7 +147,6 @@ struct ResourceCardView: View {
             
             Divider()
             
-            // Availability
             if resource.isAvailable {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
@@ -164,7 +165,6 @@ struct ResourceCardView: View {
                 }
             }
             
-            // Open / Close Hours
             HStack {
                 Image(systemName: "clock")
                     .foregroundColor(.blue)
@@ -173,7 +173,6 @@ struct ResourceCardView: View {
                     .foregroundColor(.secondary)
             }
             
-            // Crowd Level
             HStack {
                 Image(systemName: "person.3.fill")
                     .foregroundColor(crowdColor)
@@ -199,5 +198,5 @@ struct ResourceCardView: View {
 }
 
 #Preview {
-    SegmentExampleView()
+    ResourceStatusView_2()
 }
