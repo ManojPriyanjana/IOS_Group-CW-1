@@ -12,7 +12,7 @@ struct Place: Identifiable {
 struct IndoorMapView: View {
     
     let places = [
-        Place(name: "Student Computer Lab 117", x: 450, y: 360),
+        Place(name: "Student Computer Lab 117", x: 500, y: 50),
         Place(name: "Restroom", x: 100, y: 850)
     ]
     
@@ -20,10 +20,9 @@ struct IndoorMapView: View {
     @State private var zoomScale: CGFloat = 1.0
     @State private var lastZoomScale: CGFloat = 1.0
     @State private var animatePath: Bool = false
-    @State private var showGrid: Bool = true  // Grid ON/OFF
-    @State private var showRuler: Bool = true // Ruler ON/OFF
+    @State private var showGrid: Bool = true
+    @State private var showRuler: Bool = true
     
-    // Entry + path points
     let entryPoint = CGPoint(x: 500, y: 500)
     
     let pathPoints: [CGPoint] = [
@@ -34,7 +33,6 @@ struct IndoorMapView: View {
         CGPoint(x: 700, y: 550)
     ]
     
-    // Image size — check your real image size!
     let imageOriginalSize = CGSize(width: 993, height: 768)
     
     var body: some View {
@@ -53,85 +51,90 @@ struct IndoorMapView: View {
             .cornerRadius(8)
             .padding(.horizontal)
             
-            // Toggle Grid
             Toggle("Show Grid", isOn: $showGrid)
                 .padding(.horizontal)
-            
-            // Toggle Ruler
             Toggle("Show Ruler", isOn: $showRuler)
                 .padding(.horizontal)
             
-            // Map with zoom + pan
             GeometryReader { outerGeometry in
-                ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                    GeometryReader { geo in
-                        let imageDisplayedSize = geo.size
-                        let scaleX = imageDisplayedSize.width / imageOriginalSize.width
-                        let scaleY = imageDisplayedSize.height / imageOriginalSize.height
-                        
-                        ZStack {
-                            // Floor Map
-                            Image("floor 1")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                ZStack {
+                    Color(red: 208/255, green: 231/255, blue: 255/255) // 💙 Light blue background
+                        .edgesIgnoringSafeArea(.all)
+
+                    ScrollView([.horizontal, .vertical], showsIndicators: false) {
+                        GeometryReader { geo in
+                            let imageDisplayedSize = geo.size
+                            let scaleX = imageDisplayedSize.width / imageOriginalSize.width
+                            let scaleY = imageDisplayedSize.height / imageOriginalSize.height
                             
-                            // Places
-                            ForEach(places) { place in
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 20, height: 20)
-                                    .position(
-                                        x: place.x * scaleX,
-                                        y: place.y * scaleY
-                                    )
-                                    .overlay(
-                                        Text(place.name.prefix(1))
-                                            .foregroundColor(.white)
-                                            .font(.caption)
-                                    )
-                            }
-                            
-                            // Animated path if search matches
-                            if animatePath {
-                                Path { path in
-                                    let scaledFirst = CGPoint(x: pathPoints.first!.x * scaleX, y: pathPoints.first!.y * scaleY)
-                                    path.move(to: scaledFirst)
-                                    
-                                    for point in pathPoints.dropFirst() {
-                                        let scaledPoint = CGPoint(x: point.x * scaleX, y: point.y * scaleY)
-                                        path.addLine(to: scaledPoint)
-                                    }
+                            ZStack {
+                                // Floor Image (rotated 90°)
+                                Image("floor 1")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .rotationEffect(.degrees(90))
+                                
+                                // Places
+                                ForEach(places) { place in
+                                    Circle()
+                                        .fill(Color.blue)
+                                        .frame(width: 20, height: 20)
+                                        .position(
+                                            x: place.x * scaleX,
+                                            y: place.y * scaleY
+                                        )
+                                        .overlay(
+                                            Text(place.name.prefix(1))
+                                                .foregroundColor(.white)
+                                                .font(.caption)
+                                        )
                                 }
-                                .trim(from: 0, to: animatePath ? 1 : 0)
-                                .stroke(Color.orange, style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round, dash: [8]))
-                                .animation(.easeInOut(duration: 2), value: animatePath)
+                                
+                                // Path (if search triggered)
+                                if animatePath {
+                                    Path { path in
+                                        let first = CGPoint(x: pathPoints.first!.x * scaleX, y: pathPoints.first!.y * scaleY)
+                                        path.move(to: first)
+                                        
+                                        for point in pathPoints.dropFirst() {
+                                            let scaled = CGPoint(x: point.x * scaleX, y: point.y * scaleY)
+                                            path.addLine(to: scaled)
+                                        }
+                                    }
+                                    .trim(from: 0, to: 1)
+                                    .stroke(Color.orange, style: StrokeStyle(lineWidth: 6, lineCap: .round, lineJoin: .round, dash: [8]))
+                                    .animation(.easeInOut(duration: 2), value: animatePath)
+                                }
+                                
+                                if showGrid {
+                                    GridOverlay(imageSize: imageDisplayedSize, spacing: 50)
+                                }
+                                
+                                if showRuler {
+                                    RulerOverlay(imageSize: imageDisplayedSize, spacing: 50)
+                                }
                             }
-                            
-                            // Grid overlay
-                            if showGrid {
-                                GridOverlay(imageSize: imageDisplayedSize, spacing: 50)
-                            }
-                            
-                            // Ruler overlay
-                            if showRuler {
-                                RulerOverlay(imageSize: imageDisplayedSize, spacing: 50)
+                            .scaleEffect(zoomScale)
+                            .gesture(
+                                MagnificationGesture()
+                                    .onChanged { value in
+                                        zoomScale = lastZoomScale * value
+                                    }
+                                    .onEnded { _ in
+                                        lastZoomScale = zoomScale
+                                    }
+                            )
+                            .onAppear {
+                                // Calculate scale to fit (90%) on smaller dimension
+                                let scaleW = outerGeometry.size.width / imageOriginalSize.height
+                                let scaleH = outerGeometry.size.height / imageOriginalSize.width
+                                let baseScale = min(scaleW, scaleH) * 3.1
+                                zoomScale = baseScale
+                                lastZoomScale = baseScale
                             }
                         }
-                        .scaleEffect(zoomScale)
-                        .gesture(
-                            MagnificationGesture()
-                                .onChanged { value in
-                                    zoomScale = lastZoomScale * value
-                                }
-                                .onEnded { value in
-                                    lastZoomScale = zoomScale
-                                }
-                        )
+                        .frame(width: outerGeometry.size.width, height: outerGeometry.size.height)
                     }
-                    .frame(
-                        width: outerGeometry.size.width,
-                        height: outerGeometry.size.height
-                    )
                 }
             }
             .navigationTitle("Indoor Map")
@@ -147,13 +150,10 @@ struct GridOverlay: View {
     
     var body: some View {
         Path { path in
-            // Vertical lines
             stride(from: 0, through: imageSize.width, by: spacing).forEach { x in
                 path.move(to: CGPoint(x: x, y: 0))
                 path.addLine(to: CGPoint(x: x, y: imageSize.height))
             }
-            
-            // Horizontal lines
             stride(from: 0, through: imageSize.height, by: spacing).forEach { y in
                 path.move(to: CGPoint(x: 0, y: y))
                 path.addLine(to: CGPoint(x: imageSize.width, y: y))
@@ -170,7 +170,6 @@ struct RulerOverlay: View {
     
     var body: some View {
         ZStack {
-            // Horizontal ruler (top)
             Path { path in
                 stride(from: 0, through: imageSize.width, by: spacing).forEach { x in
                     path.move(to: CGPoint(x: x, y: 0))
@@ -179,7 +178,6 @@ struct RulerOverlay: View {
             }
             .stroke(Color.green.opacity(0.7), lineWidth: 1)
             
-            // Vertical ruler (left)
             Path { path in
                 stride(from: 0, through: imageSize.height, by: spacing).forEach { y in
                     path.move(to: CGPoint(x: 0, y: y))
@@ -188,12 +186,10 @@ struct RulerOverlay: View {
             }
             .stroke(Color.green.opacity(0.7), lineWidth: 1)
         }
-        
-    
     }
-       
 }
 
+// MARK: - Preview
 #Preview {
     IndoorMapView()
 }
