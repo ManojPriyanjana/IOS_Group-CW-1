@@ -17,10 +17,10 @@ struct ResourceDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 
-                Text(resource.name)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
+//                Text(resource.name)
+//                    .font(.largeTitle)
+//                    .fontWeight(.bold)
+//                
                 if resource.isAvailable {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
@@ -69,3 +69,4 @@ struct ResourceDetailView: View {
         .navigationTitle(resource.name)
     }
 }
+
