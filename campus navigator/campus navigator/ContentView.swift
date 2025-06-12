@@ -70,7 +70,7 @@ struct ContentView: View {
                 .padding(.bottom, 40)
             }
             
-            // ❌ REMOVE this old navigationDestination
+            //REMOVE this old navigationDestination
             // .navigationDestination(isPresented: $isLoggedIn) { DashboardView() }
             // Now handled in App entry point!
         }
