@@ -145,7 +145,7 @@ struct ModernIndoorMapViewV2: View {
         }
     }
 
-    // 🧠 Keep this inside the struct!
+    
     func mapImageName(for building: String, floorIndex: Int) -> String {
         let floorKey = ["ground", "floor1", "floor2"]
         let buildingKey = building.lowercased().replacingOccurrences(of: " ", with: "_")
