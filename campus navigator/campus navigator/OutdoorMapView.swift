@@ -109,7 +109,6 @@ struct OutdoorMapView: View {
                             .stroke(.blue, lineWidth: 4)
                     }
                 }
-                // Updated mapStyle to fix error
                 .mapStyle(colorScheme == .dark ? .standard(elevation: .realistic) : .standard)
                 .ignoresSafeArea()
                 .mapControls {
@@ -171,7 +170,14 @@ struct OutdoorMapView: View {
         request.transportType = .walking
 
         MKDirections(request: request).calculate { response, _ in
-            currentRoute = response?.routes.first
+            if let route = response?.routes.first {
+                DispatchQueue.main.async {
+                    // Show and zoom to route
+                    currentRoute = route
+                    let boundingRegion = MKCoordinateRegion(route.polyline.boundingMapRect)
+                    cameraPosition = .region(boundingRegion)
+                }
+            }
         }
     }
 }
