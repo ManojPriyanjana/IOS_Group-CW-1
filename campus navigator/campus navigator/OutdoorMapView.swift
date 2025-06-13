@@ -65,18 +65,25 @@ struct OutdoorMapView: View {
     @Environment(\.colorScheme) var colorScheme
     @StateObject private var locationManager = LocationManager()
 
-    @State private var cameraPosition = MapCameraPosition.region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 6.9023, longitude: 79.8612),
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-        )
+    // 1. Define the default region once
+    private let initialRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 6.9023, longitude: 79.8612),
+        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
     )
+
+    @State private var cameraPosition: MapCameraPosition
     @State private var searchText = ""
     @State private var selectedLocation: CampusLocation? = nil
     @State private var currentRoute: MKRoute? = nil
 
+    init() {
+        // Initialize cameraPosition to default
+        _cameraPosition = State(initialValue: .region(initialRegion))
+    }
+
     private var filteredLocations: [CampusLocation] {
-        searchText.isEmpty ? campusLocations
+        searchText.isEmpty
+            ? campusLocations
             : campusLocations.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
@@ -85,12 +92,11 @@ struct OutdoorMapView: View {
             ZStack(alignment: .top) {
                 // Map background
                 Map(position: $cameraPosition) {
-                    // Campus annotations
                     ForEach(filteredLocations) { location in
                         Annotation(location.name, coordinate: location.coordinate) {
                             Button {
                                 selectedLocation = location
-                                centerMap(on: location.coordinate)
+                                centerMap(on: location.coordinate, span: 0.003)
                             } label: {
                                 Image(systemName: "building.columns.fill")
                                     .resizable()
@@ -103,7 +109,6 @@ struct OutdoorMapView: View {
                             }
                         }
                     }
-                    // Route overlay
                     if let route = currentRoute {
                         MapPolyline(route.polyline)
                             .stroke(.blue, lineWidth: 4)
@@ -126,15 +131,24 @@ struct OutdoorMapView: View {
                 // Search bar overlay
                 SearchBar(text: $searchText)
                     .padding(.top, 50)
+                    .onChange(of: searchText) { newValue in
+                        withAnimation(.easeInOut) {
+                            if newValue.isEmpty {
+                                // 2. Reset to default when cleared
+                                cameraPosition = .region(initialRegion)
+                            } else if let first = filteredLocations.first {
+                                // Zoom into the first result
+                                centerMap(on: first.coordinate, span: 0.002)
+                            }
+                        }
+                    }
             }
             .navigationTitle("Campus Navigator")
             .navigationBarTitleDisplayMode(.inline)
-            // Detail sheet
             .sheet(item: $selectedLocation) { location in
                 VStack(spacing: 20) {
                     Text(location.name)
-                        .font(.title2)
-                        .bold()
+                        .font(.title2).bold()
                     Text(location.description)
                         .multilineTextAlignment(.center)
                         .padding()
@@ -154,12 +168,9 @@ struct OutdoorMapView: View {
     }
 
     // MARK: - Helpers
-    private func centerMap(on coordinate: CLLocationCoordinate2D) {
+    private func centerMap(on coordinate: CLLocationCoordinate2D, span delta: CLLocationDegrees) {
         cameraPosition = .region(
-            MKCoordinateRegion(
-                center: coordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.003, longitudeDelta: 0.003)
-            )
+            MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta))
         )
     }
 
@@ -172,10 +183,9 @@ struct OutdoorMapView: View {
         MKDirections(request: request).calculate { response, _ in
             if let route = response?.routes.first {
                 DispatchQueue.main.async {
-                    // Show and zoom to route
                     currentRoute = route
-                    let boundingRegion = MKCoordinateRegion(route.polyline.boundingMapRect)
-                    cameraPosition = .region(boundingRegion)
+                    let bounding = MKCoordinateRegion(route.polyline.boundingMapRect)
+                    cameraPosition = .region(bounding)
                 }
             }
         }
