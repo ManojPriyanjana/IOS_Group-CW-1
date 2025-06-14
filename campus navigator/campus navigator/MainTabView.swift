@@ -10,19 +10,19 @@ struct MainTabView: View {
                     Text("Dashboard")
                 }
             
-            Text("Notifications")
+            NotificationsView()
                 .tabItem {
                     Image(systemName: "bell.fill")
                     Text("Notifications")
+                    
                 }
             
-            Text("Profile")
+            ProfileView()
                 .tabItem {
                     Image(systemName: "person.crop.circle")
                     Text("Profile")
                 }
-            
-            Text("Settings")
+            AppSettingsView()
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
