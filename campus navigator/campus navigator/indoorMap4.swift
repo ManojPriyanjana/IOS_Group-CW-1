@@ -1,6 +1,6 @@
 import SwiftUI
 
-// 1️⃣ Your location model — now Equatable
+// Your location model — now Equatable
 struct Location: Identifiable, Equatable {
     let id = UUID()
     let name: String
@@ -9,7 +9,7 @@ struct Location: Identifiable, Equatable {
     let normalizedPosition: CGPoint
 }
 
-// 2️⃣ Define all your spots here
+// Define all your spots here
 let allLocations: [Location] = [
     // Floor 1
     .init(name: "Main Entrance", floor: 1, normalizedPosition: CGPoint(x: 0.15, y: 0.80)),
@@ -36,25 +36,25 @@ struct IndoorMapView4: View {
     @State private var searchText     = ""
     @State private var suggestions    = [Location]()
     @State private var selectedLoc: Location?
-    
+
     // MARK: — Floor & gesture state
     @State private var selectedFloor  = 1
     @State private var currentScale   : CGFloat = 1.0
     @State private var currentOffset  : CGSize  = .zero
-    
+
     @GestureState private var pinchScale : CGFloat = 1.0
     @GestureState private var dragOffset  : CGSize  = .zero
-    
+
     // capture the map size for centering math
     @State private var mapSize = CGSize.zero
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // Title
             Text("Building A Navigator")
                 .font(.system(size: 24, weight: .bold))
-            
-            // Searchable top bar
+
+            // Custom search bar
             HStack {
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -64,9 +64,13 @@ struct IndoorMapView4: View {
                 .padding(8)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
-                
+
                 Button("Search") {
-                    // no-op: suggestions show automatically
+                    if let found = allLocations.first(where: {
+                        $0.name.lowercased().contains(searchText.lowercased())
+                    }) {
+                        select(location: found)
+                    }
                 }
                 .fontWeight(.semibold)
                 .padding(.vertical, 8)
@@ -76,6 +80,9 @@ struct IndoorMapView4: View {
                 .cornerRadius(8)
             }
             .padding(.horizontal)
+
+            /*
+            // ⛔️ Commented out to remove extra top system search bar
             .searchable(text: $searchText, prompt: "Find a room…") {
                 ForEach(suggestions) { loc in
                     Button(loc.name) {
@@ -83,6 +90,8 @@ struct IndoorMapView4: View {
                     }
                 }
             }
+            */
+
             .onChange(of: searchText) { txt in
                 suggestions = txt.isEmpty
                     ? []
@@ -90,7 +99,7 @@ struct IndoorMapView4: View {
                         $0.name.lowercased().contains(txt.lowercased())
                     }
             }
-            
+
             // Floor Picker
             Picker("", selection: $selectedFloor) {
                 Text("Floor 1").tag(1)
@@ -99,7 +108,7 @@ struct IndoorMapView4: View {
             }
             .pickerStyle(.segmented)
             .padding(.horizontal)
-            
+
             // Zoomable & pannable map
             GeometryReader { geo in
                 ZStack {
@@ -132,13 +141,13 @@ struct IndoorMapView4: View {
                                 }
                         )
                         .clipped()
-                    
+
                     // Elevator pin (fixed)
                     Image(systemName: "tram.fill")
                         .font(.title2)
                         .foregroundColor(.red)
                         .position(x: mapSize.width * 0.8, y: mapSize.height * 0.2)
-                    
+
                     // Highlight circle
                     if let loc = selectedLoc, loc.floor == selectedFloor {
                         Circle()
@@ -157,26 +166,26 @@ struct IndoorMapView4: View {
             }
             .frame(minHeight: 400)
             .padding(.horizontal)
-            
+
             Spacer()
         }
     }
-    
+
     // MARK: — Handle search selection
     private func select(location: Location) {
         selectedFloor = location.floor
         selectedLoc   = location
-        
+
         // zoom and center
         let targetScale: CGFloat = 2.0
         currentScale = min(max(targetScale, 1), 4)
-        
+
         let scaledW = mapSize.width  * currentScale
         let scaledH = mapSize.height * currentScale
-        
+
         let tgtX = location.normalizedPosition.x * scaledW
         let tgtY = location.normalizedPosition.y * scaledH
-        
+
         currentOffset = CGSize(
             width: mapSize.width/2  - tgtX,
             height: mapSize.height/2 - tgtY
@@ -184,7 +193,7 @@ struct IndoorMapView4: View {
     }
 }
 
-// ✅ Only one preview declaration
+// Only one preview declaration
 struct IndoorMapView4_Previews: PreviewProvider {
     static var previews: some View {
         IndoorMapView4()

@@ -122,7 +122,7 @@ struct DashboardView: View {
                                     
                                     CardButton(title: "Indoor Map", systemIconName: "building.2.fill") {
 //                                        IndoorMapView()
-                                        ModernIndoorMapViewV2()
+                                        IndoorMapView4()
                                     }
                                     
                                     CardButton(title: "Resource Status", systemIconName: "square.grid.3x3.fill") {
