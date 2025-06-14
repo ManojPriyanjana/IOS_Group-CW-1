@@ -130,7 +130,7 @@ struct DashboardView: View {
                                     }
                                     
                                     CardButton(title: "Health & Support", systemIconName: "cross.case.fill") {
-                                        HealthSupportView()
+                                        UniversityHealthSupportView()
                                     }
                                 }
                             }

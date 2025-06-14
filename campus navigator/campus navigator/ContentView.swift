@@ -1,37 +1,34 @@
 import SwiftUI
 
 struct ContentView: View {
-    // 👇 Receive isLoggedIn from parent
     @Binding var isLoggedIn: Bool
-    
-    // Example state (e.g. email)
     @State private var email: String = ""
+    @State private var showGuestMap: Bool = false  // NEW
 
     var body: some View {
         NavigationStack {
-            
             ZStack {
-                // 1) Background Image
+                // Background
                 Image("BackgroundImage")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-                
-                // 2) Foreground Content
+
                 VStack(spacing: 20) {
                     Spacer().frame(height: 150)
-                    
+
                     Image("Nibm_logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 400, height: 60)
-                    
+                        .frame(width: 300, height: 80)
+
                     Text("Campus Navigator")
                         .font(.title2).bold()
                         .foregroundColor(.blue)
-                    
+
                     Spacer().frame(height: 70)
-                    
+
+                    // Email Input
                     TextField("Enter Campus Email", text: $email)
                         .padding(12)
                         .background(Color.white.opacity(0.6))
@@ -41,10 +38,10 @@ struct ContentView: View {
                                 .stroke(Color.white.opacity(0.8), lineWidth: 1)
                         )
                         .padding(.horizontal, 100)
-                    
+
                     // Login Button
                     Button {
-                        isLoggedIn = true // 👈 trigger switch to MainTabView
+                        isLoggedIn = true
                     } label: {
                         Text("Login")
                             .font(.headline)
@@ -55,29 +52,31 @@ struct ContentView: View {
                             .cornerRadius(8)
                             .padding(.horizontal, 100)
                     }
-                    
-                    // Continue as Guest
+
+                    // Continue as Guest Button
                     Button {
-                        isLoggedIn = true // 👈 also trigger MainTabView
+                        showGuestMap = true  // Trigger map view
                     } label: {
                         Text("Continue as Guest")
                             .foregroundColor(Color.white.opacity(0.8))
                     }
                     .padding(.top, 10)
-                    
-                    Spacer()
+
+                    // Guest NavigationLink (Hidden)
+                    NavigationLink(
+                        destination: OutdoorMapView(),
+                        isActive: $showGuestMap,
+                        label: {
+                            EmptyView()
+                        }
+                    )
                 }
                 .padding(.bottom, 40)
             }
-            
-            //REMOVE this old navigationDestination
-            // .navigationDestination(isPresented: $isLoggedIn) { DashboardView() }
-            // Now handled in App entry point!
         }
     }
 }
 
 #Preview {
-    // Preview needs a constant Binding
     ContentView(isLoggedIn: .constant(false))
 }
